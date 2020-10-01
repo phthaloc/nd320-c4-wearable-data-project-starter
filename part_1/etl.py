@@ -301,31 +301,36 @@ def raw_data(input_data_raw, labels_raw, window_length, window_shift, freq_range
             datapoint is taken.
 
     """
-    labels = np.array([])
-    groups = np.array([])
+    if labels_raw:
+        labels = np.array([])
+        groups = np.array([])
+        lbls = {}
+    else:
+        labels = None
+        groups = None
     dict_data_raw_window = {
         'ppg': [],
         'accx': [],
-        'accy':[],
-        'accz':[],
+        'accy': [],
+        'accz': [],
     }
-    lbls = {}
     for key, dict_sig in input_data_raw.items():
         dict_data_window = window_sizing(
             dict_signals=dict_sig,
             window_length=window_length,
             window_shift=window_shift,
         )
-        # bring/ensure input data and labels to/have same length:
-        dict_data_window, lbls[key] = match_data_labels(
-            dict_data=dict_data_window,
-            labels=labels_raw[f'ref{key[4:]}']
-        )
-        labels = np.append(arr=labels, values=lbls[key], axis=0)
-        # add a group label so that one can assign each (sub-)
-        # data to a dataset:
-        grps = np.array([key]*len(lbls[key]))
-        groups = np.append(arr=groups, values=grps, axis=0)
+        if labels_raw:
+            # bring/ensure input data and labels to/have same length:
+            dict_data_window, lbls[key] = match_data_labels(
+                dict_data=dict_data_window,
+                labels=labels_raw[f'ref{key[4:]}']
+            )
+            labels = np.append(arr=labels, values=lbls[key], axis=0)
+            # add a group label so that one can assign each (sub-)
+            # data to a dataset:
+            grps = np.array([key]*len(lbls[key]))
+            groups = np.append(arr=groups, values=grps, axis=0)
         for k, val in dict_data_window.items():
             dict_data_raw_window[k] += [val]
 
@@ -362,7 +367,6 @@ def raw_data(input_data_raw, labels_raw, window_length, window_shift, freq_range
         fft_accy=dict_data_raw_window['fft_accy'],
         fft_accz=dict_data_raw_window['fft_accz']
     )
-    
     return dict_data_raw_window, labels, groups
 
 
@@ -484,10 +488,11 @@ def fractional_spectral_energy(freqs, fft, freq_range):
     """
     Fractional spectral energy of fourier power signal.
     :param freqs: frequencies for corresponding fourier signal
+	(same unit as freq_range)
     :param fft: power spectrum of fourier signal
     :param freq_range: tuple with minimum and maximum frequency.
         The minimal and maximal frequency should be contained in the
-        freqs array range
+        freqs array range (same unit as freqs)
     :return: fractional energy
     """
     # if inputs are not 2d transform them to 2d
