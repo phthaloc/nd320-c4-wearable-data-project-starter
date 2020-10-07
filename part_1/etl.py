@@ -7,7 +7,6 @@ plt.style.use('ggplot')
 
 
 __author__ = 'Udo Dehm, udacity'
-__copyright__ = 'Copyright 2020'
 __credits__ = ['Udo Dehm', 'udacity']
 __license__ = ''
 __version__ = '0.1.0'
