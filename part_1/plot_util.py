@@ -45,19 +45,20 @@ def plot_raw_signals(ppg, accx, accy, accz, fs):
     return fig
 
 
-def plot_spectogram(ppg, accx, accy, accz, labels, fs, window_length, window_shift, min_freq, max_freq):
+def plot_spectogram(ppg, accx, accy, accz, fs, window_length, window_shift, min_freq, max_freq, labels=None, predictions=None):
     """
     plot sectrograms of all PPG and accelerometer signals
     :param ppg: PPG signal
     :param accx: Accelerometer signal in x-direction
     :param accy: accelerometer signal in y-direction
     :param accz: accelerometer signal in z-direction
-    :param labels: array with labels (heart beat in Hz)
     :param fs: sample frequency
     :param window_length: length of the window/filter (in sample units)
     :param window_shift: shift of window for each step/ stride (in sample units)
     :param min_freq: minimum frequency (y-axis) to plot
     :param max_freq: maximum frequency (y-axis) to plot
+    :param labels: array with labels (heart beat in Hz)
+    :param predictions: array with predictions (heart beat in Hz)
     :return: sectrogram figure object
     """
     ts_center = np.arange(0, len(labels), 1) * window_shift / fs + window_length / fs / 2
@@ -76,7 +77,10 @@ def plot_spectogram(ppg, accx, accy, accz, labels, fs, window_length, window_shi
         x=ppg, NFFT=window_length, Fs=fs,
         noverlap=window_length-window_shift, cmap='jet_r'
     )
-    axarr[0].plot(ts_center, labels, 'o', markersize=8, color='k', label='label')
+    if labels is not None:
+    	axarr[0].plot(ts_center, labels, 'o', markersize=8, color='k', label='label')
+    if predictions is not None:
+        axarr[0].plot(ts_center, predictions, 'o', markersize=8, color='w', label='predictions')
     axarr[0].set_xlabel('time (sec)')
     axarr[0].set_ylabel('frequency (Hz)')
     axarr[0].set_title('Spectogram of PPG signal')
@@ -86,13 +90,15 @@ def plot_spectogram(ppg, accx, accy, accz, labels, fs, window_length, window_shi
     ppg_img.set_clim(0, 50)
     axarr[0].set_ylim((min_freq, max_freq))
     axarr[0].legend()
-
     
     accx_spec, accx_spec_freqs, accx_t, accx_img = axarr[1].specgram(
         x=accx, NFFT=window_length, Fs=fs,
         noverlap=window_length-window_shift, cmap='jet_r'
     )
-    axarr[1].plot(ts_center, labels, 'o', markersize=8, color='k', label='label')
+    if labels is not None:
+    	axarr[1].plot(ts_center, labels, 'o', markersize=8, color='k', label='label')
+    if predictions is not None:
+        axarr[1].plot(ts_center, predictions, 'o', markersize=8, color='w', label='predictions')
     axarr[1].set_xlabel('time (sec)')
     axarr[1].set_ylabel('frequency (Hz)')
     axarr[1].set_title('Spectogram of acceleration signal in x-direction')
@@ -107,7 +113,10 @@ def plot_spectogram(ppg, accx, accy, accz, labels, fs, window_length, window_shi
         x=accy, NFFT=window_length, Fs=fs,
         noverlap=window_length-window_shift, cmap='jet_r'
     )
-    axarr[2].plot(ts_center, labels, 'o', markersize=8, color='k', label='label')
+    if labels is not None:
+    	axarr[2].plot(ts_center, labels, 'o', markersize=8, color='k', label='label')
+    if predictions is not None:
+        axarr[2].plot(ts_center, predictions, 'o', markersize=8, color='w', label='predictions')
     axarr[2].set_xlabel('time (sec)')
     axarr[2].set_ylabel('frequency (Hz)')
     axarr[2].set_title('Spectogram of acceleration signal in y-direction')
@@ -117,12 +126,15 @@ def plot_spectogram(ppg, accx, accy, accz, labels, fs, window_length, window_shi
     accy_img.set_clim(-50, 0)
     axarr[2].set_ylim((min_freq, max_freq))
     axarr[2].legend()
-
+    
     accz_spec, accz_spec_freqs, accz_t, accz_img = axarr[3].specgram(
         x=accz, NFFT=window_length, Fs=fs,
         noverlap=window_length-window_shift, cmap='jet_r'
     )
-    axarr[3].plot(ts_center, labels, 'o', markersize=8, color='k', label='label')
+    if labels is not None:
+    	axarr[3].plot(ts_center, labels, 'o', markersize=8, color='k', label='label')
+    if predictions is not None:
+        axarr[3].plot(ts_center, predictions, 'o', markersize=8, color='w', label='predictions')
     axarr[3].set_xlabel('time (sec)')
     axarr[3].set_ylabel('frequency (Hz)')
     axarr[3].set_title('Spectogram of acceleration signal in z-direction')
@@ -137,19 +149,20 @@ def plot_spectogram(ppg, accx, accy, accz, labels, fs, window_length, window_shi
     return fig
 
 
-def plot_spectogram_sumarized(ppg, acc, labels, fs, window_length, window_shift, min_freq, max_freq):
+def plot_spectogram_sumarized(ppg, acc, fs, window_length, window_shift, min_freq, max_freq, labels=None, predictions=None):
     """
     plot sectrograms of all PPG and accelerometer signals
     :param ppg: PPG signal
     :param accx: Accelerometer signal in x-direction
     :param accy: accelerometer signal in y-direction
     :param accz: accelerometer signal in z-direction
-    :param labels: array with labels (heart beat in Hz)
     :param fs: sample frequency
     :param window_length: length of the window/filter (in sample units)
     :param window_shift: shift of window for each step/ stride (in sample units)
     :param min_freq: minimum frequency (y-axis) to plot
     :param max_freq: maximum frequency (y-axis) to plot
+    :param labels: array with labels (heart beat in Hz)
+    :param predictions: array with predictions (heart beat in Hz)
     :return: sectrogram figure object
     """
     ts_center = np.arange(0, len(labels), 1) * window_shift / fs + window_length / fs / 2
@@ -168,7 +181,10 @@ def plot_spectogram_sumarized(ppg, acc, labels, fs, window_length, window_shift,
         x=ppg, NFFT=window_length, Fs=fs,
         noverlap=window_length-window_shift, cmap='jet_r'
     )
-    axarr[0].plot(ts_center, labels, 'o', markersize=8, color='k', label='label')
+    if labels is not None:
+    	axarr[0].plot(ts_center, labels, 'o', markersize=8, color='k', label='label')
+    if predictions is not None:
+        axarr[0].plot(ts_center, predictions, 'o', markersize=8, color='w', label='predictions')
     axarr[0].set_xlabel('time (sec)')
     axarr[0].set_ylabel('frequency (Hz)')
     axarr[0].set_title('Spectogram of PPG signal')
@@ -184,10 +200,13 @@ def plot_spectogram_sumarized(ppg, acc, labels, fs, window_length, window_shift,
         x=acc, NFFT=window_length, Fs=fs,
         noverlap=window_length-window_shift, cmap='jet_r'
     )
-    axarr[1].plot(ts_center, labels, 'o', markersize=8, color='k', label='label')
+    if labels is not None:
+    	axarr[1].plot(ts_center, labels, 'o', markersize=8, color='k', label='label')
+    if predictions is not None:
+        axarr[1].plot(ts_center, predictions, 'o', markersize=8, color='w', label='predictions')
     axarr[1].set_xlabel('time (sec)')
     axarr[1].set_ylabel('frequency (Hz)')
-    axarr[1].set_title('Spectogram of acceleration signal in x-direction')
+    axarr[1].set_title('Spectogram of acceleration signal')
     divider = make_axes_locatable(axarr[1])
     cax = divider.append_axes('right', size='5%', pad=0.05)
     fig.colorbar(accx_img, cax=cax, orientation='vertical')

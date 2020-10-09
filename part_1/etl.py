@@ -588,3 +588,139 @@ def featurize(dict_raw_window_data, peaks_param, frac_en_param, freq_range):
                     freq_range=freq_r
                 )
     return features
+
+
+def transform_features(dict_features):
+    """
+    Transform the input dictionary containing the feature names as key
+    and the features as values to a stacked numpy array. 
+    :param dict_features: dictionary with keys: feature names, values:
+        features
+    :return: tuple with 2 outputs:
+        - numpy array with stacked features
+        - list with feature names corresponding to the columns of the
+          features output (first output)
+    """
+    features = np.column_stack(list(dict_features.values()))
+
+    # compute feature names:
+    feature_names = []
+    for key, val in dict_features.items():
+        try:
+            names = [key] * val.shape[1]
+            feature_names += [f'{name}_{i}' for i, name in enumerate(names)]
+        except IndexError:
+            feature_names += [key]
+    return features, feature_names
+
+
+def prepare_inference_data(
+    ppg,
+    accx,
+    accy,
+    accz,
+    window_length,
+    window_shift, 
+    freq_range,
+    fs,
+    n_fft,
+    peaks_param,
+    frac_en_param
+):
+    """
+    Given all relevant time signals (PPG and x, y, z accelerometer data) this function
+    computes the derived features suitable for the ML algorithm input.
+    :param ppg: PPG time signal
+    :param accx: Accelerometer time signal in x-direction
+    :param accy: Accelerometer time signal in y-direction
+    :param accz: Accelerometer time signal in z-direction
+    :param window_length: length of the window/filter (in sample units)
+    :param window_shift: shift of window for each step/ stride (in sample units)
+    :param freq_range: tuple with minimum and maximum frequency.
+        The frequencies and fft signals are filterd for frequencies
+        in this interval range.
+    :param fs: Sampling frequency of imported time series
+    :param n_fft:    
+    :param peaks_param: dictionary with peak parameters for each signal the peak features
+        should be calculated
+    :param frac_en_param: dictionary with fractional energy parameter for each siagnal the
+        fractional energies should be calculated
+    :return: tuple with 3 outputs:
+        - dictionary with all raw datapoints (signals split into fixed window sizes). Each
+          row in each dictionary value corresponds to a feature datapoint.
+        - numpy array with stacked features
+        - list with feature names corresponding to the columns of the
+          features output (first output)
+    """
+    dict_signals = {
+        '_': {
+            'ppg': ppg,
+            'accx': accx,
+            'accy': accy,
+            'accz': accz,
+        }
+    }
+    
+    data, _, _ = raw_data(
+        input_data_raw=dict_signals,
+        labels_raw=None,
+        window_length=window_length,
+        window_shift=window_shift,
+        freq_range=freq_range,
+        fs=fs,
+        n_fft=n_fft
+    )
+    
+    # get all features:
+    dict_features = featurize(
+        dict_raw_window_data=data,
+        peaks_param=peaks_param,
+        frac_en_param=frac_en_param,
+        freq_range=freq_range
+    )
+    features, feature_names = transform_features(dict_features=dict_features)
+    return data, features, feature_names
+
+
+def confidence(freqs, fft, y_pred, confidence_freq_range, freq_range):
+    """
+    Compute the confidence of a frequency peak/resting pulse rate prediction
+    (y_pred) given an underlying frequency power signal.
+    The confidence is computed as the ratio between the integrated 
+    (summed) power spectrum (fft) around (confidence_freq_range) the prediction
+    (y_pred) and the integrated (summed) power spectrum of the complete signal.
+    The complete signal is defined as the frequency range given by argument 
+    freq_range.
+    :param freqs: frequencies corresponding to the fft power signal (can be
+        stacked signals)
+    :param ftt: FFT power signal (can be stacked signals)
+    :param y_pred: numpy array containing frequencies. These frequencies
+        are predictions of the resting heart rate.
+    :param confidence_freq_range: float number defining the interval size
+        that is used for computing the integrated power signals for the 
+        heart rate prediction. Must be smaller than the complete frequency
+        interval (confidence_freq_range<(freq_range[1]-freq_range[0]))
+    :param freq_range: tuple with minimum and maximum frequency defining
+        the range of the complete signal.
+    :return: numpy array with confidence estimates
+    """
+    # for computing the confidence we filter for frequencies
+    # in the range of interest.
+    freqs_filtered, fft_filtered = filter_frequencies(
+        freqs=freqs,
+        fft=fft,
+        freq_range=freq_range
+    )
+
+    # compute confidence:
+    conf = []
+    for row_freqs, row_fft, pred in zip(freqs_filtered, fft_filtered, y_pred):
+        conf += [
+            fractional_spectral_energy(
+                freqs=row_freqs,
+                fft=row_fft,
+                freq_range=(pred/60-0.5*confidence_freq_range,
+                            pred/60+0.5*confidence_freq_range)
+            )[0]
+        ]
+    return np.stack(conf)
