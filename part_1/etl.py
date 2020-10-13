@@ -1,9 +1,12 @@
+"""
+Helper module for data extraction, transformation and loading.
+"""
+
 import glob
 import numpy as np
 import scipy as sp
-import matplotlib.pyplot as plt
-from mpl_toolkits.axes_grid1 import make_axes_locatable
-plt.style.use('ggplot')
+import scipy.io
+import scipy.signal
 
 
 __author__ = 'Udo Dehm, udacity'
@@ -393,6 +396,7 @@ def reshape_peaks(peaks, freqs, fft, nr_peaks=4, pad_value=np.nan):
     # pad all peaks to a certain length so that all ffts have the same length
     pwr_peaks_sorted = np.pad(
         array=pwr_peaks_sorted[:nr_peaks],
+        mode='constant',
         pad_width=(0, nr_peaks-len(pwr_peaks_sorted[:nr_peaks])),
         constant_values=pad_value
     )
@@ -402,6 +406,7 @@ def reshape_peaks(peaks, freqs, fft, nr_peaks=4, pad_value=np.nan):
     freqs_peaks_sorted = freqs[peaks_sorted]
     freqs_peaks_sorted = np.pad(
         array=freqs_peaks_sorted[:nr_peaks],
+        mode='constant',
         pad_width=(0, nr_peaks-len(freqs_peaks_sorted[:nr_peaks])),
         constant_values=pad_value
     )
@@ -648,9 +653,7 @@ def prepare_inference_data(
     :return: tuple with 3 outputs:
         - dictionary with all raw datapoints (signals split into fixed window sizes). Each
           row in each dictionary value corresponds to a feature datapoint.
-        - numpy array with stacked features
-        - list with feature names corresponding to the columns of the
-          features output (first output)
+    	- dictionary with all specified features
     """
     dict_signals = {
         '_': {
@@ -678,49 +681,6 @@ def prepare_inference_data(
         frac_en_param=frac_en_param,
         freq_range=freq_range
     )
-    features, feature_names = transform_features(dict_features=dict_features)
-    return data, features, feature_names
+    return data, dict_features
 
 
-def confidence(freqs, fft, y_pred, confidence_freq_range, freq_range):
-    """
-    Compute the confidence of a frequency peak/resting pulse rate prediction
-    (y_pred) given an underlying frequency power signal.
-    The confidence is computed as the ratio between the integrated 
-    (summed) power spectrum (fft) around (confidence_freq_range) the prediction
-    (y_pred) and the integrated (summed) power spectrum of the complete signal.
-    The complete signal is defined as the frequency range given by argument 
-    freq_range.
-    :param freqs: frequencies corresponding to the fft power signal (can be
-        stacked signals)
-    :param ftt: FFT power signal (can be stacked signals)
-    :param y_pred: numpy array containing frequencies. These frequencies
-        are predictions of the resting heart rate.
-    :param confidence_freq_range: float number defining the interval size
-        that is used for computing the integrated power signals for the 
-        heart rate prediction. Must be smaller than the complete frequency
-        interval (confidence_freq_range<(freq_range[1]-freq_range[0]))
-    :param freq_range: tuple with minimum and maximum frequency defining
-        the range of the complete signal.
-    :return: numpy array with confidence estimates
-    """
-    # for computing the confidence we filter for frequencies
-    # in the range of interest.
-    freqs_filtered, fft_filtered = filter_frequencies(
-        freqs=freqs,
-        fft=fft,
-        freq_range=freq_range
-    )
-
-    # compute confidence:
-    conf = []
-    for row_freqs, row_fft, pred in zip(freqs_filtered, fft_filtered, y_pred):
-        conf += [
-            fractional_spectral_energy(
-                freqs=row_freqs,
-                fft=row_fft,
-                freq_range=(pred/60-0.5*confidence_freq_range,
-                            pred/60+0.5*confidence_freq_range)
-            )[0]
-        ]
-    return np.stack(conf)

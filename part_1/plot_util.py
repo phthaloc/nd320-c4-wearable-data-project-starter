@@ -1,3 +1,8 @@
+"""
+Helper module for plotting functions.
+"""
+
+
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -231,7 +236,8 @@ def plot_window_prediction (
     acc_peaks_freqs,
     acc_peaks_pwr,
     min_freq,
-    max_freq
+    max_freq,
+    ppg_pred=None
 ):
     """
     Plot a window of the complete signal which is used for feature extraction.
@@ -252,7 +258,9 @@ def plot_window_prediction (
     color = 'tab:red'
     ax.plot(freqs, ppg_fft, '.-', color=color, label='fft of PPG')
     ax.plot(ppg_peaks_freqs, ppg_peaks_pwr, '.', color='b', markersize=10, label='found peaks')
-    ax.axvline(ppg_label/60, color='k', label='true heart rate (label)')
+    ax.axvline(ppg_label, color='k', label='true heart rate (label)')
+    if ppg_pred is not None:
+        ax.axvline(ppg_pred, color='k', label='heart rate prediction', linestyle='--')
     ax.axvline(min_freq, color='0.5', label='min. frequency')
     ax.axvline(max_freq, color='0.5', label='max. frequency')
     ax.set_xlabel('frequency (Hz)')
