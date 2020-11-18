@@ -70,12 +70,6 @@ The starter code includes a few helpful functions.
 
 ### Folder Contents
 
-#### Starter
-These are the files that are given:
-- `README.md`
-- `datasets`
-- `pulse_rate_starter.ipynb`
-
 #### Completed
 Once you have completed this portion these should be the files in this repo.
 - `README.md`
@@ -88,7 +82,7 @@ Once you have completed this portion these should be the files in this repo.
 <sup>*</sup> These files can be named slightly different but must fufill the description given and be clear to the reviewer what that file includes.
 
 -----
-## Part 2: Clinical Application Overview
+## Clinical Application Simulation
 
 Now that you have built your pulse rate algorithm and tested your algorithm to know it works, we can use it to compute more clinically meaningful features and discover healthcare trends.
 
@@ -107,19 +101,11 @@ The data from this project comes from the [Cardiac Arrythmia Suppression Trial (
 
 ### Folder Contents
 
-#### Starter
-These are the files that are given:
-- `README.md`
-- `datasets`
-- `clinical_app_starter.ipynb`
-- `heart-rate-age-reference-chart.jpg`
-
 #### Completed
 Once you have completed this portion these should be the files in this repo.
 - `README.md`
 - `datasets` - this folder should be removed when submitting for reviewers.
 - `clinical_app.ipynb`<sup>*</sup> - completed code portions and clinical conclusion.
-- `heart-rate-age-reference-chart.jpg`
 
 <sup>*</sup> This file can be named slightly different but must fufill the description given and be clear to the reviewer what that file includes.
 
