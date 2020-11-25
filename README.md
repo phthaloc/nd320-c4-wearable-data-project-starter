@@ -34,82 +34,48 @@ Building a confidence algorithm for pulse rate estimation is a little tricker th
 ### Algorithm Specifications
 The model consists of a Random Forest Regressor model which estimates pulse rate from the PPG signal and a 3-axis accelerometer signals.
 It is assumed that pulse rate will be restricted between 40BPM (beats per minute) and 240BPM.
-  * produces an estimation confidence. A higher confidence value means that this estimate should be more accurate than an estimate with a lower confidence value.
-  * produces an output at least every 2 seconds.  
+The algorithm produces an estimation confidence. A higher confidence value means that this estimate should be more accurate than an estimate with a lower confidence value.
+The algorithm is able to produces an output at least every 2 seconds.
+
+For a more detailed description of the algorithm see file `pulse_rate_estimation.ipynb`.
 
 ### Success Criteria
-Your algorithm performance success criteria is as follows: the mean absolute error at 90% availability must be less than 15 BPM on the test set.  Put another way, the best 90% of your estimates--according to your own confidence output-- must have a mean absolute error of less than 15 BPM. The evaluation function is included in the starter code.
+The pre-defined success criteria for the algorithm performance is as follows: the mean absolute error at 90% availability must be less than 15 BPM on the test set.  Put another way, the best 90% of your estimates--according to the confidence output (see below)-- must have a mean absolute error of less than 15 BPM.
 
-Note that the unit test will call `AggregateErrorMetric` on the output of your `RunPulseRateAlgorithm` on a test dataset that you do not have access to. The result of this call must be less than 15 BPM for your algorithm's performance to pass. The test set should be easier than the training set so as long as your algorithm is doing reasonably well on the training data set it should pass this test.
-
-**This will be validated through the Test Your Algorithm Workspace which includes a unit test.**
-
-### Some Helpful Tips
-  1. Remember to bandpass filter all your signals. Use the 40-240BPM range to create your pass band.
-  2. Use plt.specgram to visualize your signals in the frequency domain. You can plot your estimates on top of the spectrogram to see where things are going wrong.
-  3. When the dominant accelerometer frequency is the same as the PPG, try picking the next strongest PPG frequency if there is another good candidate.
-  4. Sometimes the cadence of the arm swing is the same as the heart beat. So if you can't find another good candidate pulse rate outside of the accelerometer peak, it may be the same as the accelerometer.
-  5. One option for a confidence algorithm is to answer the question, "How much energy in the frequency spectrum is concentrated near the pulse rate estimate?" You can answer this by summing frequency spectrum near the pulse rate estimate and dividing it by the sum of the entire spectrum.
+### Some important processing steps
+  1. We bandpass filter all signals. We use the 40-240BPM range to create the pass band.
+  2. We use spectrograms (plt.specgram) to visualize the signals in the frequency domain. We plot the estimates on top of the spectrogram to see where things are going wrong.
+  3. The confidence of the model estimates are computed by summing frequency spectrum near the pulse rate estimate and dividing it by the sum of the entire spectrum. The idea is to consider the frequency spectrum and ask "How much energy in the frequency spectrum is concentrated near the pulse rate estimate?"
   
 ### Dataset
-You will be using the Troika<sup>1</sup> dataset to build your algorithm. Find the dataset under datasets/troika/training_data. The README in that folder will tell you how to interpret the data. The starter code contains a function to help load these files.
+We use the Troika<sup>1</sup> dataset to build the algorithm. Find the dataset under datasets/troika/training_data. The README in that folder contains some more information on how to interpret the data.
 
 1. **Troika** - Zhilin Zhang, Zhouyue Pi, Benyuan Liu, ‘‘TROIKA: A General Framework for Heart Rate Monitoring Using Wrist-Type Photoplethysmographic Signals During Intensive Physical Exercise,’’IEEE Trans. on Biomedical Engineering, vol. 62, no. 2, pp. 522-531, February 2015. Link
-
-### Getting Started
-The starter code includes a few helpful functions. 
-- `TroikaDataset`, `AggregateErrorMetric`, and `Evaluate` do not need to be modified.  
-- Use `TroikaDataset` to retreive a list of .mat files containing reference and signal data. 
-- Use `scipy.io.loadmat` to the .mat file into a python object. 
-- The bulk of the code will be in the `RunPulseRateAlgorithm` function. You can and should break the code out into multiple functions. 
-- `RunPulseRateAlgorithm` will take in two filenames and return a tuple of two numpy arrays--per-estimate pulse rate error and confidence values. Remember to write docstrings for all functions that you write (including `RunPulseRateAlgorithm`)
-- Finally, run the `Evaluate` function to call your algorithm on the Troika dataset and compute an aggregate error metric. While building the algorithm you may want to inspect the algorithm errors on more detail.
-
-### Folder Contents
-
-#### Completed
-Once you have completed this portion these should be the files in this repo.
-- `README.md`
-- `datasets` - this folder should be removed when submitting for reviewers. 
-- `pulse_rate.ipynb`<sup>*</sup> - complete pulse rate algorithm and write-up
-- `unit_test.ipynb`<sup>*</sup> - includes the complete pulse rate algorithm 
-- `passed.png`<sup>*</sup> - rendered in the `unit_test.ipynb` showing that the algorithm passed and by what error metric.
-
-
-<sup>*</sup> These files can be named slightly different but must fufill the description given and be clear to the reviewer what that file includes.
 
 -----
 ## Clinical Application Simulation
 
-Now that you have built your pulse rate algorithm and tested your algorithm to know it works, we can use it to compute more clinically meaningful features and discover healthcare trends.
+After a pulse rate algorithm has been developed, we can use it to compute more clinically meaningful features and discover healthcare trends.
 
-Specifically, you will use 24 hours of heart rate data from 1500 samples to try to validate the well known trend that average resting heart rate increases up until middle age and then decreases into old age. We'll also see if resting heart rates are higher for women than men. See the trend illustrated in this image:
+Specifically, we use 24 hours of heart rate data from 1500 samples to try to validate the well known trend that average resting heart rate increases up until middle age and then decreases into old age. We'll also see if resting heart rates are higher for women than men. This trend is illustrated in this image:
 
 ![heart-rate-age-ref-chart](imgs/heart-rate-age-reference-chart.jpg)
 
-Follow the steps in the `clinical_app_starter.ipynb` to reproduce this result!
-
 ### Dataset (CAST)
 
-The data from this project comes from the [Cardiac Arrythmia Suppression Trial (CAST)](https://physionet.org/content/crisdb/3.0.0/), which was sponsored by the National Heart, Lung, and Blood Institute (NHLBI). CAST collected 24 hours of heart rate data from ECGs from people who have had a myocardial infarction (MI) within the past two years.<sup>1</sup> This data has been smoothed and resampled to more closely resemble PPG-derived pulse rate data from a wrist wearable.<sup>2</sup>
+The data comes from the [Cardiac Arrythmia Suppression Trial (CAST)](https://physionet.org/content/crisdb/1.0.0/), which was sponsored by the National Heart, Lung, and Blood Institute (NHLBI). CAST collected 24 hours of heart rate data from ECGs from people who have had a myocardial infarction (MI) within the past two years.<sup>2</sup> This data has been smoothed and resampled to more closely resemble PPG-derived pulse rate data from a wrist wearable.<sup>3</sup>
 
-1. **CAST RR Interval Sub-Study Database Citation** - Stein PK, Domitrovich PP, Kleiger RE, Schechtman KB, Rottman JN. Clinical and demographic determinants of heart rate variability in patients post myocardial infarction: insights from the Cardiac Arrhythmia Suppression Trial (CAST). Clin Cardiol 23(3):187-94; 2000 (Mar)
-2. **Physionet Citation** - Goldberger AL, Amaral LAN, Glass L, Hausdorff JM, Ivanov PCh, Mark RG, Mietus JE, Moody GB, Peng C-K, Stanley HE. PhysioBank, PhysioToolkit, and PhysioNet: Components of a New Research Resource for Complex Physiologic Signals (2003). Circulation. 101(23):e215-e220.
+-----
+## Repository file descriptions
 
-### Folder Contents
-
-#### Completed
-Once you have completed this portion these should be the files in this repo.
+These are the files in this repo:
 - `README.md`
-- `datasets` - this folder should be removed when submitting for reviewers.
-- `clinical_app.ipynb`<sup>*</sup> - completed code portions and clinical conclusion.
-
-<sup>*</sup> This file can be named slightly different but must fufill the description given and be clear to the reviewer what that file includes.
-
-### Dataset (CAST)
-
-The data from this project comes from the [Cardiac Arrythmia Suppression Trial (CAST)](https://physionet.org/content/crisdb/1.0.0/), which was sponsored by the National Heart, Lung, and Blood Institute (NHLBI). CAST collected 24 hours of heart rate data from ECGs from people who have had a myocardial infarction (MI) within the past two years.<sup>2</sup> This data has been smoothed and resampled to more closely resemble PPG-derived pulse rate data from a wrist wearable.<sup>3</sup>
-
+- `datasets` - direcory containing the datasets. 
+- `pulse_rate_estimation.ipynb`<sup>*</sup> - pulse rate algorithm and write-up
+- `etl.py` - ETL helper functions
+- `ml.py` - machine learning model related helper functions
+- `plot_util.py` - plotting helper functions
+- `clinical_application_simulation.ipynb` - simple clinical application example
 -----
 ## Citations
 1. **Troika** - Zhilin Zhang, Zhouyue Pi, Benyuan Liu, ‘‘TROIKA: A General Framework for Heart Rate Monitoring Using Wrist-Type Photoplethysmographic Signals During Intensive Physical Exercise,’’IEEE Trans. on Biomedical Engineering, vol. 62, no. 2, pp. 522-531, February 2015. Link
