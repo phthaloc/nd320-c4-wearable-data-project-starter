@@ -1,7 +1,7 @@
 # Activity Aware Pulse Rate Algorithm Project
 
-In this repository we create a [Part 1](#pulse-rate-algorithm-overview) - Develop a **Pulse Rate Algorithm** on the given training data. Then **Test Your Algorithm** and see that it has met the success criteria.
-- [Part 2](#clinical-application-simulation-overview) - Apply the Pulse Rate Algorithm on a **Clinical Application** and compute more clinically meaningful features and discover healthcare trends.
+In this repository we create a **Pulse Rate Algorithm** based on a Random Forest Regressor model.
+Then the Pulse Rate Algorithm is applied on a **Clinical Application** to discover healthcare trends.
 
 ## Introduction
 A core feature that many users expect from their wearable devices is pulse rate estimation. Continuous pulse rate estimation can be informative for many aspects of a wearer's health. Pulse rate during exercise can be a measure of workout intensity and resting heart rate is sometimes used as an overall measure of cardiovascular fitness. We will create a pulse rate estimation algorithm for a wrist-wearable device.
@@ -32,9 +32,8 @@ Building a confidence algorithm for pulse rate estimation is a little tricker th
 ## Pulse Rate Algorithm Overview
   
 ### Algorithm Specifications
-You must build an algorithm that:
-  * estimates pulse rate from the PPG signal and a 3-axis accelerometer.
-  * assumes pulse rate will be restricted between 40BPM (beats per minute) and 240BPM
+The model consists of a Random Forest Regressor model which estimates pulse rate from the PPG signal and a 3-axis accelerometer signals.
+It is assumed that pulse rate will be restricted between 40BPM (beats per minute) and 240BPM.
   * produces an estimation confidence. A higher confidence value means that this estimate should be more accurate than an estimate with a lower confidence value.
   * produces an output at least every 2 seconds.  
 
